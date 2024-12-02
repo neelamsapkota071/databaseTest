@@ -45,7 +45,6 @@ describe('Mechanic Repair Record API Routes', () => {
         numRepairs: 1,
       });
     vehicleId = vehicleResponse.body.vehicleId;
-    console.log(vehicleResponse.body, mechanicResponse.body)
   });
 
   test('GET /repairRecords should return an empty array initially', async () => {
