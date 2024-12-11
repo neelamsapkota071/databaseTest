@@ -75,6 +75,12 @@ Usage
         Create a customer:
         POST /customers
 
+API
+Use postman to import the api collection
+Create environment with any name of your choice 
+Create variable : baseURL
+There are some foreign keys in post body so make sure you are updating it according to data of your table
+
 Contributing
 
 Contributions are welcome! Please follow these steps:
