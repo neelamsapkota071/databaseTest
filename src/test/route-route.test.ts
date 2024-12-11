@@ -10,7 +10,9 @@ let AppDataSource: DataSource;
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
-  new_server = app.listen(3001)
+  new_server = app.listen(3001, () => {
+    console.log(`Server is running on http://localhost:${3001}`);
+  });
 });
 
 afterAll(async () => {

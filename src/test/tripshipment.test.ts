@@ -12,12 +12,14 @@ import app  from '../test';
 import { createServer, Server } from 'http';
 
 let new_server: Server;
-
+ 
 let AppDataSource: DataSource;
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
-  new_server = app.listen(3001)
+  new_server = app.listen(3001, () => {
+    console.log(`Server is running on http://localhost:${3001}`);
+  });
 });
 
 afterAll(async () => {
@@ -156,13 +158,9 @@ describe('TripShipment API Tests', () => {
       where: { tripShipmentId: newTripShipment.tripShipmentId },
       relations: ['tripId', 'shipmentId'], // Adjust names based on your entity configuration
     });
-    console.log(savedTripShipment, "retrieved values");
-    console.log(trip1, "trip values");
-    console.log(shipment1, "shipment values");
 
 
     expect(savedTripShipment).not.toBeNull();
-    console.log(trip1, savedTripShipment);
     expect(savedTripShipment?.tripId.tripId).toBe(trip1.tripId);
     expect(savedTripShipment?.shipmentId.shipmentId).toBe(shipment1.shipmentId);
   });
