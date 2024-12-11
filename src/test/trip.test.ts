@@ -4,8 +4,7 @@ import request from 'supertest';
 import { Employee } from '../entity/Employee';
 import { Vehicle } from '../entity/Vehicle';
 import { Route } from '../entity/Route';
-import { Trip } from '../entity/Trip'; // Assuming Trip entity exists
-// let App: any;
+import { Trip } from '../entity/Trip';
 import app  from '../test';
 import { createServer, Server } from 'http';
 

@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { setupTestDataSource } from '../test-utils';
-import { MechanicRepairRecord } from '../entity/MechanicRepairRecord';
 import { Employee } from '../entity/Employee';
 import { Vehicle } from '../entity/Vehicle';
 

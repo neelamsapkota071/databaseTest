@@ -1,12 +1,6 @@
 import { DataSource } from 'typeorm';
 import { setupTestDataSource } from '../test-utils';
-import { Trip } from '../entity/Trip';
-import request from 'supertest';
-import { Employee } from '../entity/Employee';
-import { Vehicle } from '../entity/Vehicle';
 import { Route } from '../entity/Route';
-import { rootCertificates } from 'tls';
-import { connect } from 'http2';
 
 let AppDataSource: DataSource;
 
