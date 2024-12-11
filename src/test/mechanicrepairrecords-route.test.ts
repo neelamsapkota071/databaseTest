@@ -1,19 +1,23 @@
 import request from 'supertest';
 import { setupTestDataSource } from '../test-utils';
 import { DataSource } from 'typeorm';
+import app  from '../test';
+import { createServer, Server } from 'http';
+
+let new_server: Server;
 
 let AppDataSource: DataSource;
-import  {app, server}  from '../app';
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
   if (AppDataSource) {
-    server.close()
     await AppDataSource.destroy();
   }
+  new_server.close()
 });
 
 describe('Mechanic Repair Record API Routes', () => {
@@ -25,8 +29,8 @@ describe('Mechanic Repair Record API Routes', () => {
     const mechanicResponse = await request(app)
       .post('/employees')
       .send({
-        firstName: 'John',
-        lastName: 'Doe',
+        firstName: 'Neelam',
+        lastName: 'Sapkota',
         seniority: 10,
         isMechanic: true,
         certifiedVehicleTypes: ['Car', 'Truck'],

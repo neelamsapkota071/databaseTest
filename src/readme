@@ -1,0 +1,88 @@
+A TypeScript-based project designed to test PostgreSQL databases, build APIs using Express.js, and perform comprehensive testing for robust functionality and reliability.
+Features
+
+    Database Testing: Ensures PostgreSQL database integrity and reliability.
+    API Development: Creates RESTful APIs with Express.js.
+    ORM Integration: Simplifies database interactions using TypeORM.
+    Comprehensive Testing: Implements unit and integration tests to validate API and database interactions.
+
+Technologies Used
+
+    Database: PostgreSQL
+    Web Framework: Express.js
+    ORM: TypeORM
+    Testing Frameworks: Jest
+    Virtualization: Docker
+
+Installation and Setup
+Prerequisites
+
+    Node.js
+    Docker
+    Docker Compose
+
+Steps to Run
+
+Clone the repository:
+
+    git clone https://github.com/neelamsapkota071/databaseTest.git
+    cd <project-folder>
+    code . (opens your code in code editor)
+
+Install dependencies:
+
+    npm install
+
+Create a Docker image:
+
+Note: Replace your_name with your preferred name:
+
+    docker run --name postgres-container -e POSTGRES_USER=your_name -e POSTGRES_PASSWORD=password -e POSTGRES_DB=your_name-db -p 5432:5432 -d postgres
+
+Start the Docker containers:
+
+    docker start postgres-container (in cmd)
+
+Set up the environment:
+
+    Locate the ormconfig.ts and test-utils.ts files.
+    Provide your database credentials and other configurations.
+
+Run the application:
+
+    To create tables in the database:
+
+        npm run dev
+
+Running Tests
+
+Run individual tests:
+
+    npm test <test-file-name>
+
+Run all tests:
+
+    npm test
+
+Usage
+
+    Access the API endpoints using tools like Postman or cURL.
+    API documentation is available at:
+    Postman Documentation.
+    Example endpoints:
+        Retrieve a customer:
+        GET /customers/:customerId
+        Create a customer:
+        POST /customers
+
+Contributing
+
+Contributions are welcome! Please follow these steps:
+
+    Fork the repository.
+    Create a feature branch:
+
+git checkout -b feature/your-feature-name
+
+Commit your changes and push them to the branch.
+Submit a pull request.

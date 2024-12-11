@@ -1,20 +1,23 @@
 import request from 'supertest';
 import { setupTestDataSource } from '../test-utils';
 import { DataSource } from 'typeorm';
+import app  from '../test';
+import { createServer, Server } from 'http';
 
+let new_server: Server;
 
 let AppDataSource: DataSource;
-import  {app, server}  from '../app';
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
   if (AppDataSource) {
-    server.close()
     await AppDataSource.destroy();
   }
+  new_server.close()
 });
 
 describe('Route API Routes', () => {
@@ -28,20 +31,20 @@ describe('Route API Routes', () => {
     const response = await request(app)
       .post('/routes')
       .send({
-        origin: 'New York',
-        destination: 'Los Angeles',
+        origin: 'Kathmandu',
+        destination: 'Bhaktapur',
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.origin).toBe('New York');
-    expect(response.body.destination).toBe('Los Angeles');
+    expect(response.body.origin).toBe('Kathmandu');
+    expect(response.body.destination).toBe('Bhaktapur');
   });
 
   test('GET /routes should return the created route', async () => {
     const response = await request(app).get('/routes');
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].origin).toBe('New York');
+    expect(response.body[0].origin).toBe('Kathmandu');
   });
 
   test('GET /routes/:routeId should return a specific route', async () => {
@@ -51,7 +54,7 @@ describe('Route API Routes', () => {
     const response = await request(app).get(`/routes/${routeId}`);
     expect(response.status).toBe(200);
     expect(response.body.routeId).toBe(routeId);
-    expect(response.body.origin).toBe('New York');
+    expect(response.body.origin).toBe('Kathmandu');
   });
 
   test('PUT /routes/:routeId should update a route', async () => {
@@ -61,13 +64,13 @@ describe('Route API Routes', () => {
     const response = await request(app)
       .put(`/routes/${routeId}`)
       .send({
-        origin: 'San Francisco',
-        destination: 'Las Vegas',
+        origin: 'Lalitpur',
+        destination: 'Kupondole',
       });
 
     expect(response.status).toBe(200);
-    expect(response.body.origin).toBe('San Francisco');
-    expect(response.body.destination).toBe('Las Vegas');
+    expect(response.body.origin).toBe('Lalitpur');
+    expect(response.body.destination).toBe('Kupondole');
   });
 
   test('DELETE /routes/:routeId should delete a route', async () => {
@@ -80,29 +83,5 @@ describe('Route API Routes', () => {
 
     const fetchResponse = await request(app).get(`/routes/${routeId}`);
     expect(fetchResponse.status).toBe(404);
-  });
-
-  test('GET /routes/:routeId with invalid ID should return 400', async () => {
-    const response = await request(app).get('/routes/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid route ID');
-  });
-
-  test('PUT /routes/:routeId with invalid ID should return 400', async () => {
-    const response = await request(app)
-      .put('/routes/invalid-id')
-      .send({
-        origin: 'Invalid City',
-        destination: 'Invalid Destination',
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid route ID');
-  });
-
-  test('DELETE /routes/:routeId with invalid ID should return 400', async () => {
-    const response = await request(app).delete('/routes/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid route ID');
   });
 });

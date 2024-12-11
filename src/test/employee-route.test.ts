@@ -1,21 +1,23 @@
 import request from 'supertest';
 import { setupTestDataSource } from '../test-utils';
 import { DataSource } from 'typeorm';
+import app  from '../test';
+import { createServer, Server } from 'http';
 
-import  {app, server}  from '../app';
+let new_server: Server;
+
 let AppDataSource: DataSource;
 
 beforeAll(async () => {
-  // import { app, server } from '../app'; // Import your Express app
-;
   AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
   if (AppDataSource) {
-    server.close()
     await AppDataSource.destroy();
   }
+  new_server.close()
 });
 
 
@@ -29,16 +31,16 @@ describe('Employee API Routes', () => {
     const response = await request(app)
       .post('/employees')
       .send({
-        firstName: 'Alice',
-        lastName: 'Johnson',
+        firstName: 'neelam',
+        lastName: 'sapkota',
         seniority: 5,
         isMechanic: true,
         certifiedVehicleTypes: ['Car', 'Truck'],
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.firstName).toBe('Alice');
-    expect(response.body.lastName).toBe('Johnson');
+    expect(response.body.firstName).toBe('neelam');
+    expect(response.body.lastName).toBe('sapkota');
     expect(response.body.seniority).toBe(5);
     expect(response.body.isMechanic).toBe(true);
     expect(response.body.certifiedVehicleTypes).toEqual(['Car', 'Truck']);
@@ -48,7 +50,7 @@ describe('Employee API Routes', () => {
     const response = await request(app).get('/employees');
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].firstName).toBe('Alice');
+    expect(response.body[0].firstName).toBe('neelam');
   });
 
   test('GET /employees/:employeeId should return a specific employee', async () => {
@@ -57,7 +59,7 @@ describe('Employee API Routes', () => {
 
     const response = await request(app).get(`/employees/${employeeId}`);
     expect(response.status).toBe(200);
-    expect(response.body.firstName).toBe('Alice');
+    expect(response.body.firstName).toBe('neelam');
   });
 
   test('PUT /employees/:employeeId should update an employee', async () => {
@@ -67,15 +69,15 @@ describe('Employee API Routes', () => {
     const response = await request(app)
       .put(`/employees/${employeeId}`)
       .send({
-        firstName: 'Alice',
-        lastName: 'Smith',
+        firstName: 'neelam',
+        lastName: 'sapkota',
         seniority: 6,
         isMechanic: false,
         certifiedVehicleTypes: ['Bike'],
       });
 
     expect(response.status).toBe(200);
-    expect(response.body.lastName).toBe('Smith');
+    expect(response.body.lastName).toBe('sapkota');
     expect(response.body.seniority).toBe(6);
     expect(response.body.isMechanic).toBe(false);
     expect(response.body.certifiedVehicleTypes).toEqual(['Bike']);

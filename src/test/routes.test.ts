@@ -1,26 +1,23 @@
 import { DataSource } from 'typeorm';
 import { setupTestDataSource } from '../test-utils';
-import { app, server } from '../app'; // Import your Express app
 import { Trip } from '../entity/Trip';
 import request from 'supertest';
 import { Employee } from '../entity/Employee';
 import { Vehicle } from '../entity/Vehicle';
 import { Route } from '../entity/Route';
 import { rootCertificates } from 'tls';
-import { AppDataSource } from '../ormconfig';
 import { connect } from 'http2';
-let App: any; // Express app instance
-let connection: DataSource;
+
+let AppDataSource: DataSource;
 
 beforeAll(async () => {
-  connection = await AppDataSource.initialize();
-  App = app;
+  AppDataSource = await setupTestDataSource();
 });
 
 afterAll(async () => {
-  server.close()
-
-  await connection.destroy();
+  if (AppDataSource) {
+    await AppDataSource.destroy();
+  }
 });
 
 describe('Route Entity Tests', () => {
@@ -28,8 +25,8 @@ describe('Route Entity Tests', () => {
     const routeRepository = AppDataSource.getRepository(Route);
 
     const newRoute = routeRepository.create({
-      origin: 'Toronto',
-      destination: 'Vancouver',
+      origin: 'Milton',
+      destination: 'Mississauga',
     });
 
     await routeRepository.save(newRoute);
@@ -39,36 +36,36 @@ describe('Route Entity Tests', () => {
     });
 
     expect(savedRoute).not.toBeNull();
-    expect(savedRoute?.origin).toBe('Toronto');
-    expect(savedRoute?.destination).toBe('Vancouver');
+    expect(savedRoute?.origin).toBe('Milton');
+    expect(savedRoute?.destination).toBe('Mississauga');
   });
 
   test('should update a route', async () => {
     const routeRepository = AppDataSource.getRepository(Route);
 
     const newRoute = routeRepository.create({
-      origin: 'Montreal',
-      destination: 'Calgary',
+      origin: 'Nepal',
+      destination: 'Dubai',
     });
 
     await routeRepository.save(newRoute);
 
-    newRoute.destination = 'Edmonton';
+    newRoute.destination = 'Dubai Updated';
     await routeRepository.save(newRoute);
 
     const updatedRoute = await routeRepository.findOneBy({
       routeId: newRoute.routeId,
     });
 
-    expect(updatedRoute?.destination).toBe('Edmonton');
+    expect(updatedRoute?.destination).toBe('Dubai Updated');
   });
 
   test('should delete a route', async () => {
     const routeRepository = AppDataSource.getRepository(Route);
 
     const newRoute = routeRepository.create({
-      origin: 'Halifax',
-      destination: 'Winnipeg',
+      origin: 'Butwal',
+      destination: 'Pokhara',
     });
 
     await routeRepository.save(newRoute);

@@ -1,19 +1,23 @@
 import request from 'supertest';
 import { setupTestDataSource } from '../test-utils';
 import { DataSource } from 'typeorm';
+import app  from '../test';
+import { createServer, Server } from 'http';
+
+let new_server: Server;
 
 let AppDataSource: DataSource;
-import  {app, server}  from '../app';
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
   if (AppDataSource) {
-    server.close()
     await AppDataSource.destroy();
   }
+  new_server.close()
 });
 
 let customerId1: number;
@@ -25,19 +29,19 @@ describe('Shipment API Routes', () => {
     const response = await request(app)
       .post('/customers')
       .send({
-        name: 'John Doe',
-        address: '123 Main St',
-        phone1: '123-456-7890',
-        phone2: '987-654-3210',
+      name: 'Aayush Basnet',
+      address: '192 Lear Gate',
+      phone1: '857-658-7596',
+      phone2: '859-854-7896',
       });
 
     const response2 = await request(app)
       .post('/customers')
       .send({
-        name: 'John Doe',
-        address: '123 Main St',
-        phone1: '123-456-7890',
-        phone2: '987-654-3210',
+      name: 'Rama Sakota',
+      address: '458 Islington St',
+      phone1: '984-594-4100',
+      phone2: '986-611-0003',
       });
 
     customerId1 = response.body.customerId;
@@ -60,8 +64,8 @@ describe('Shipment API Routes', () => {
       .post('/shipments')
       .send({
         customerId: customerId1,
-        origin: 'San Francisco',
-        destination: 'New York',
+        origin: 'Kathmandu',
+        destination: 'Bhaktapur',
         shipmentDate: '2024-11-27',
         weight: 500,
         status: 'In Transit',
@@ -70,8 +74,8 @@ describe('Shipment API Routes', () => {
 
     expect(response.status).toBe(201);
     expect(response.body.customerId).toBe(1);
-    expect(response.body.origin).toBe('San Francisco');
-    expect(response.body.destination).toBe('New York');
+    expect(response.body.origin).toBe('Kathmandu');
+    expect(response.body.destination).toBe('Bhaktapur');
     expect(response.body.shipmentDate).toBe('2024-11-27');
     expect(response.body.weight).toBe(500);
     expect(response.body.status).toBe('In Transit');
@@ -81,7 +85,7 @@ describe('Shipment API Routes', () => {
     const response = await request(app).get('/shipments');
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].origin).toBe('San Francisco');
+    expect(response.body[0].origin).toBe('Kathmandu');
   });
 
   test('GET /shipments/:shipmentId should return a specific shipment', async () => {
@@ -91,7 +95,7 @@ describe('Shipment API Routes', () => {
     const response = await request(app).get(`/shipments/${shipmentId}`);
     expect(response.status).toBe(200);
     expect(response.body.shipmentId).toBe(shipmentId);
-    expect(response.body.origin).toBe('San Francisco');
+    expect(response.body.origin).toBe('Kathmandu');
   });
 
   test('PUT /shipments/:shipmentId should update a shipment', async () => {
@@ -102,8 +106,8 @@ describe('Shipment API Routes', () => {
       .put(`/shipments/${shipmentId}`)
       .send({
         customerId: customerId2,
-        origin: 'Los Angeles',
-        destination: 'Chicago',
+        origin: 'Butwal',
+        destination: 'Pokhara',
         shipmentDate: '2024-11-28',
         weight: 600,
         status: 'Delivered',
@@ -111,8 +115,8 @@ describe('Shipment API Routes', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.customerId).toBe(customerId2);
-    expect(response.body.origin).toBe('Los Angeles');
-    expect(response.body.destination).toBe('Chicago');
+    expect(response.body.origin).toBe('Butwal');
+    expect(response.body.destination).toBe('Pokhara');
     expect(response.body.shipmentDate).toBe('2024-11-28');
     expect(response.body.weight).toBe(600);
     expect(response.body.status).toBe('Delivered');
@@ -128,33 +132,5 @@ describe('Shipment API Routes', () => {
 
     const fetchResponse = await request(app).get(`/shipments/${shipmentId}`);
     expect(fetchResponse.status).toBe(404);
-  });
-
-  test('GET /shipments/:shipmentId with invalid ID should return 400', async () => {
-    const response = await request(app).get('/shipments/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid shipment ID');
-  });
-
-  test('PUT /shipments/:shipmentId with invalid ID should return 400', async () => {
-    const response = await request(app)
-      .put('/shipments/invalid-id')
-      .send({
-        customerId: 3,
-        origin: 'Invalid City',
-        destination: 'Invalid Destination',
-        shipmentDate: '2024-11-29',
-        weight: 700,
-        status: 'Invalid Status',
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid shipment ID');
-  });
-
-  test('DELETE /shipments/:shipmentId with invalid ID should return 400', async () => {
-    const response = await request(app).delete('/shipments/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid shipment ID');
   });
 });

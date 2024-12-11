@@ -19,10 +19,8 @@ describe('Employee Entity Tests', () => {
     const employeeRepository = AppDataSource.getRepository(Employee);
 
     const newEmployee = employeeRepository.create({
-      firstName: 'John',
-      lastName: 
-      'Doe',
-      
+      firstName: 'test',
+      lastName: 'test',
       seniority: 5,
       isMechanic: true,
       certifiedVehicleTypes: ['Car', 'Truck'],
@@ -35,8 +33,8 @@ describe('Employee Entity Tests', () => {
     });
 
     expect(savedEmployee).not.toBeNull();
-    expect(savedEmployee?.firstName).toBe('John');
-    expect(savedEmployee?.lastName).toBe('Doe');
+    expect(savedEmployee?.firstName).toBe('test');
+    expect(savedEmployee?.lastName).toBe('test');
     expect(savedEmployee?.seniority).toBe(5);
     expect(savedEmployee?.isMechanic).toBe(true);
     expect(savedEmployee?.certifiedVehicleTypes).toEqual(['Car', 'Truck']);
@@ -46,8 +44,8 @@ describe('Employee Entity Tests', () => {
     const employeeRepository = AppDataSource.getRepository(Employee);
 
     const newEmployee = employeeRepository.create({
-      firstName: 'Jane',
-      lastName: 'Smith',
+      firstName: 'test1',
+      lastName: 'test2',
       seniority: 3,
       isMechanic: false,
       certifiedVehicleTypes: ['Bike'],
@@ -71,8 +69,8 @@ describe('Employee Entity Tests', () => {
     const employeeRepository = AppDataSource.getRepository(Employee);
 
     const newEmployee = employeeRepository.create({
-      firstName: 'Alice',
-      lastName: 'Brown',
+      firstName: 'neelam',
+      lastName: 'sapkota',
       seniority: 2,
       isMechanic: false,
       certifiedVehicleTypes: ['Scooter'],

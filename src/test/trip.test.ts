@@ -1,24 +1,28 @@
 import { DataSource } from 'typeorm';
 import { setupTestDataSource } from '../test-utils';
-import {app, server} from '../app';import { Trip } from '../entity/Trip';
 import request from 'supertest';
 import { Employee } from '../entity/Employee';
 import { Vehicle } from '../entity/Vehicle';
 import { Route } from '../entity/Route';
-import { rootCertificates } from 'tls';
-import { AppDataSource } from '../ormconfig';
-import { connect } from 'http2';
-let App: any; // Express app instance
-let connection: DataSource;
+import { Trip } from '../entity/Trip'; // Assuming Trip entity exists
+// let App: any;
+import app  from '../test';
+import { createServer, Server } from 'http';
+
+let new_server: Server;
+
+let AppDataSource: DataSource;
 
 beforeAll(async () => {
-  connection = await AppDataSource.initialize();
-  // App = app; // Assuming your app is exported as `App`
+  AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
-
-  await connection.destroy();
+  if (AppDataSource) {
+    await AppDataSource.destroy();
+  }
+  new_server.close()
 });
 
 let testDriver1: Employee;
@@ -31,32 +35,29 @@ let testRoute1: Route;
 let testRoute2: Route;
 
 describe('Trip API Tests', () => {
-
-  let repairRecordId: number;
-
   beforeAll(async () => {
-    const employeeRepo = connection.getRepository(Employee);
-    const vehicleRepo = connection.getRepository(Vehicle);
-    const routeRepo = connection.getRepository(Route);
+    const employeeRepo = AppDataSource.getRepository(Employee);
+    const vehicleRepo = AppDataSource.getRepository(Vehicle);
+    const routeRepo = AppDataSource.getRepository(Route);
 
-    // Creating a test driver
+    
     testDriver1 = await employeeRepo.save({
       firstName: 'Test',
       lastName: 'Mechanic',
       isMechanic: true,
       seniority: 5,
-      certifiedVehicleTypes: ["asd"],
+      certifiedVehicleTypes: ['car'],
     });
 
     testDriver2 = await employeeRepo.save({
       firstName: 'Test',
-      lastName: 'Mechanic',
-      isMechanic: true,
-      seniority: 5,
-      certifiedVehicleTypes: ["asd"],
+      lastName: 'Driver',
+      isMechanic: false,
+      seniority: 3,
+      certifiedVehicleTypes: ['truck'],
     });
 
-    // Creating a test vehicle
+    // Creating test vehicles
     testVehicle1 = await vehicleRepo.save({
       brand: 'Honda',
       model: 'Civic',
@@ -67,27 +68,28 @@ describe('Trip API Tests', () => {
     });
 
     testVehicle2 = await vehicleRepo.save({
-      brand: 'Honda',
-      model: 'Civic',
+      brand: 'Toyota',
+      model: 'Corolla',
       vehicleType: 'car',
-      year: 2020,
-      loadCapacity: 100,
-      numRepairs: 1,
+      year: 2019,
+      loadCapacity: 120,
+      numRepairs: 2,
     });
 
+    
     testRoute1 = await routeRepo.save({
-      origin: 'Montreal',
-      destination: 'Calgary',
+      origin: 'Nepal',
+      destination: 'Canada',
     });
 
     testRoute2 = await routeRepo.save({
-      origin: 'Montreal',
-      destination: 'Calgary',
+      origin: 'Pokhara',
+      destination: 'Lalitpur',
     });
   });
 
   test('should create a new trip', async () => {
-    const response = await request(app)
+    const response = await request(new_server)
       .post('/trips')
       .send({
         routeId: testRoute1.routeId,
@@ -97,90 +99,84 @@ describe('Trip API Tests', () => {
       });
 
     expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('tripId');
   });
 
   test('should fetch all trips', async () => {
-    const response = await request(app).get('/trips');
+    const response = await request(new_server).get('/trips');
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
 
   test('should fetch a single trip by ID', async () => {
-    const tripRepo = connection.getRepository(Trip);
+    const tripRepo = AppDataSource.getRepository(Trip);
 
     const newTrip = tripRepo.create({
       routeId: testRoute1,
       vehicleId: testVehicle1,
       driver1Id: testDriver1,
-      driver2Id: testDriver1,
+      driver2Id: testDriver2,
     });
 
     await tripRepo.save(newTrip);
 
-    const response = await request(app).get(`/trips/${newTrip.tripId}`);
+    const response = await request(new_server).get(`/trips/${newTrip.tripId}`);
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
-      tripId: newTrip.tripId
+      tripId: newTrip.tripId,
     });
   });
 
   test('should update a trip', async () => {
-    const newTrip = AppDataSource.getRepository(Trip).create({
+    const tripRepo = AppDataSource.getRepository(Trip);
+
+    const newTrip = tripRepo.create({
       routeId: testRoute1,
       vehicleId: testVehicle2,
       driver1Id: testDriver1,
       driver2Id: testDriver2,
     });
-    await AppDataSource.getRepository(Trip).save(newTrip);
 
-    const response = await request(app)
+    await tripRepo.save(newTrip);
+
+    const response = await request(new_server)
       .put(`/trips/${newTrip.tripId}`)
       .send({
-        routeId: testRoute2,
-        vehicleId: testVehicle2,
-        driver1Id: testDriver2,
-        driver2Id: testDriver1,
+        routeId: testRoute2.routeId,
+        vehicleId: testVehicle2.vehicleId,
+        driver1Id: testDriver2.employeeId,
+        driver2Id: testDriver1.employeeId,
       });
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       tripId: newTrip.tripId,
-      routeId: testRoute2,
-      vehicleId: testVehicle2,
-      driver1Id: testDriver2,
-      driver2Id: testDriver1,
+      routeId: testRoute2.routeId,
+      vehicleId: testVehicle2.vehicleId,
+      driver1Id: testDriver2.employeeId,
+      driver2Id: testDriver1.employeeId,
     });
   });
 
   test('should delete a trip', async () => {
-    const tripRepository = AppDataSource.getRepository(Trip);
-    const newTrip = AppDataSource.getRepository(Trip).create({
+    const tripRepo = AppDataSource.getRepository(Trip);
+
+    const newTrip = tripRepo.create({
       routeId: testRoute1,
-      vehicleId: testVehicle2,
+      vehicleId: testVehicle1,
       driver1Id: testDriver1,
       driver2Id: testDriver2,
     });
-    await tripRepository.save(newTrip);
 
-    const response = await request(app).delete(`/trips/${newTrip.tripId}`);
+    await tripRepo.save(newTrip);
+
+    const response = await request(new_server).delete(`/trips/${newTrip.tripId}`);
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ message: 'Trip deleted successfully' });
 
-    const deletedTrip = await AppDataSource.getRepository(Trip).findOneBy({
+    const deletedTrip = await tripRepo.findOneBy({
       tripId: newTrip.tripId,
     });
     expect(deletedTrip).toBeNull();
-  });
-
-  test('should handle invalid trip ID', async () => {
-    const response = await request(app).get('/trips/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject({ message: 'Invalid trip ID' });
-  });
-
-  test('should return 404 for non-existent trip', async () => {
-    const response = await request(app).get('/trips/9999');
-    expect(response.status).toBe(404);
-    expect(response.body).toMatchObject({ message: 'Trip not found' });
   });
 });

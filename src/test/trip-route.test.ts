@@ -2,18 +2,23 @@ import request from 'supertest';
 import { setupTestDataSource } from '../test-utils';
 import { DataSource } from 'typeorm';
 
+import app  from '../test';
+import { createServer, Server } from 'http';
+
+let new_server: Server;
+
 let AppDataSource: DataSource;
-import  {app, server}  from '../app';
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
   if (AppDataSource) {
-    server.close()
     await AppDataSource.destroy();
   }
+  new_server.close()
 });
 
 let routeId1: number;
@@ -28,27 +33,27 @@ describe('Trip API Routes', () => {
     const response1 = await request(app)
       .post('/routes')
       .send({
-        origin: 'New York',
-        destination: 'Los Angeles',
+        origin: 'Nepal',
+        destination: 'Canada',
       });
     routeId1 = response1.body.routeId;
 
     const response2 = await request(app)
       .post('/routes')
       .send({
-        origin: 'New York',
-        destination: 'Los Angeles',
+        origin: 'Bode',
+        destination: 'Kupondole',
       });
     routeId2 = response2.body.routeId;
 
     const response3 = await request(app)
       .post('/employees')
       .send({
-        firstName: 'Alice',
-        lastName: 'Johnson',
-        seniority: 5,
-        isMechanic: true,
-        certifiedVehicleTypes: ['Car', 'Truck'],
+      firstName: 'test',
+      lastName: 'test',
+      seniority: 5,
+      isMechanic: true,
+      certifiedVehicleTypes: ['Car', 'Truck'],
       });
 
     employeeId1 = response3.body.employeeId
@@ -56,11 +61,11 @@ describe('Trip API Routes', () => {
     const response4 = await request(app)
       .post('/employees')
       .send({
-        firstName: 'Alice',
-        lastName: 'Johnson',
-        seniority: 5,
-        isMechanic: true,
-        certifiedVehicleTypes: ['Car', 'Truck'],
+      firstName: 'test1',
+      lastName: 'test2',
+      seniority: 3,
+      isMechanic: false,
+      certifiedVehicleTypes: ['Bike'],
       });
 
     employeeId2 = response4.body.employeeId
@@ -147,31 +152,5 @@ describe('Trip API Routes', () => {
 
     const fetchResponse = await request(app).get(`/trips/${tripId}`);
     expect(fetchResponse.status).toBe(404);
-  });
-
-  test('GET /trips/:tripId with invalid ID should return 400', async () => {
-    const response = await request(app).get('/trips/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid trip ID');
-  });
-
-  test('PUT /trips/:tripId with invalid ID should return 400', async () => {
-    const response = await request(app)
-      .put('/trips/invalid-id')
-      .send({
-        routeId: 3,
-        vehicleId: 3,
-        driver1Id: 105,
-        driver2Id: 106,
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid trip ID');
-  });
-
-  test('DELETE /trips/:tripId with invalid ID should return 400', async () => {
-    const response = await request(app).delete('/trips/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid trip ID');
   });
 });

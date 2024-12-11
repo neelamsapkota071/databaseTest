@@ -1,27 +1,23 @@
 import 'reflect-metadata';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
-import { app, server } from '../app'; // Assuming Express app is exported from this module
-import { AppDataSource } from '../ormconfig';
 import { MechanicRepairRecord } from '../entity/MechanicRepairRecord';
 import { Employee } from '../entity/Employee';
 import { Vehicle } from '../entity/Vehicle';
 import { Customer } from '../entity/Customer';
 import { Shipment } from '../entity/Shipment';
+import { setupTestDataSource } from '../test-utils';
 
-let App: any; // Express app instance
-let connection: DataSource;
+let AppDataSource: DataSource;
 
 beforeAll(async () => {
-  connection = await AppDataSource.initialize();
-  App = app; // Assuming your app is exported as `App`
+  AppDataSource = await setupTestDataSource();
 });
 
 afterAll(async () => {
-  server.close()
-
-  await connection.destroy();
-
+  if (AppDataSource) {
+    await AppDataSource.destroy();
+  }
 });
 
 let customer1: Customer;
@@ -29,20 +25,20 @@ let customer2: Customer;
 
 describe('Shipment Entity Tests', () => {
   beforeAll(async () => {
-    const customerRepo = connection.getRepository(Customer);
+    const customerRepo = AppDataSource.getRepository(Customer);
 
     // create Customer 
     customer1 = await customerRepo.save({
-      name: 'John Doe',
-      address: '123 Elm Street',
-      phone1: '555-1234',
-      phone2: '555-5678',
+      name: 'Aayush Basnet',
+      address: '192 Lear Gate',
+      phone1: '857-658-7596',
+      phone2: '859-854-7896',
     });
     customer2 = await customerRepo.save({
-      name: 'John Doe',
-      address: '123 Elm Street',
-      phone1: '555-1234',
-      phone2: '555-5678',
+      name: 'Rama Sakota',
+      address: '458 Islington St',
+      phone1: '984-594-4100',
+      phone2: '986-611-0003',
     });
 
   });
@@ -52,8 +48,8 @@ describe('Shipment Entity Tests', () => {
 
     const newShipment = shipmentRepository.create({
       customerId: customer1,
-      origin: 'New York',
-      destination: 'Los Angeles',
+      origin: 'Kusuma',
+      destination: 'Mustang',
       shipmentDate: new Date('2024-11-01'),
       weight: 200,
       status: 'In Transit',
@@ -66,8 +62,8 @@ describe('Shipment Entity Tests', () => {
     });
 
     expect(savedShipment).not.toBeNull();
-    expect(savedShipment?.origin).toBe('New York');
-    expect(savedShipment?.destination).toBe('Los Angeles');
+    expect(savedShipment?.origin).toBe('Kusuma');
+    expect(savedShipment?.destination).toBe('Mustang');
     expect(savedShipment?.weight).toBe(200);
     expect(savedShipment?.status).toBe('In Transit');
   });
@@ -77,8 +73,8 @@ describe('Shipment Entity Tests', () => {
 
     const newShipment = shipmentRepository.create({
       customerId: customer1,
-      origin: 'San Francisco',
-      destination: 'Chicago',
+      origin: 'Nepalgunj',
+      destination: 'Pokhara',
       shipmentDate: new Date('2024-11-02'),
       weight: 300,
       status: 'Pending',
@@ -101,8 +97,8 @@ describe('Shipment Entity Tests', () => {
 
     const newShipment = shipmentRepository.create({
       customerId: customer2,
-      origin: 'Houston',
-      destination: 'Miami',
+      origin: 'Pokhara',
+      destination: 'Lumbini',
       shipmentDate: new Date('2024-11-03'),
       weight: 150,
       status: 'Pending',

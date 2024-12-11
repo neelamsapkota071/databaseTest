@@ -12,19 +12,17 @@ afterAll(async () => {
   if (AppDataSource) {
     await AppDataSource.destroy();
   }
-
 });
-
 
 describe('Customer Entity Tests', () => {
   test('should create and retrieve a customer', async () => {
     const customerRepository = AppDataSource.getRepository(Customer);
 
     const newCustomer = customerRepository.create({
-      name: 'John Doe',
-      address: '123 Elm Street',
-      phone1: '555-1234',
-      phone2: '555-5678',
+      name: 'Srusti Patel',
+      address: '485 Queen St',
+      phone1: '748-547-8521',
+      phone2: '897-524-9685',
     });
 
     await customerRepository.save(newCustomer);
@@ -34,42 +32,42 @@ describe('Customer Entity Tests', () => {
     });
 
     expect(savedCustomer).not.toBeNull();
-    expect(savedCustomer?.name).toBe('John Doe');
-    expect(savedCustomer?.address).toBe('123 Elm Street');
-    expect(savedCustomer?.phone1).toBe('555-1234');
-    expect(savedCustomer?.phone2).toBe('555-5678');
+    expect(savedCustomer?.name).toBe('Srusti Patel');
+    expect(savedCustomer?.address).toBe('485 Queen St');
+    expect(savedCustomer?.phone1).toBe('748-547-8521');
+    expect(savedCustomer?.phone2).toBe('897-524-9685');
   });
 
   test('should update a customer', async () => {
     const customerRepository = AppDataSource.getRepository(Customer);
 
     const newCustomer = customerRepository.create({
-      name: 'Jane Smith',
-      address: '456 Oak Avenue',
-      phone1: '555-1111',
-      phone2: '555-2222',
+      name: 'Rama Sakota',
+      address: '458 Islington St',
+      phone1: '984-594-4100',
+      phone2: '986-611-0003',
     });
 
     await customerRepository.save(newCustomer);
 
-    newCustomer.address = '789 Pine Road';
+    newCustomer.address = '458 Islington St';
     await customerRepository.save(newCustomer);
 
     const updatedCustomer = await customerRepository.findOneBy({
       customerId: newCustomer.customerId,
     });
 
-    expect(updatedCustomer?.address).toBe('789 Pine Road');
+    expect(updatedCustomer?.address).toBe('458 Islington St');
   });
 
   test('should delete a customer', async () => {
     const customerRepository = AppDataSource.getRepository(Customer);
 
     const newCustomer = customerRepository.create({
-      name: 'Alice Brown',
-      address: '101 Maple Lane',
-      phone1: '555-3333',
-      phone2: '555-4444',
+      name: 'Aayush Basnet',
+      address: '192 Lear Gate',
+      phone1: '857-658-7596',
+      phone2: '859-854-7896',
     });
 
     await customerRepository.save(newCustomer);

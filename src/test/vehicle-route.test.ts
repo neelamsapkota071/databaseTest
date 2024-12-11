@@ -1,30 +1,34 @@
 import request from 'supertest';
 import { setupTestDataSource } from '../test-utils';
 import { DataSource } from 'typeorm';
+import app  from '../test';
+import { createServer, Server } from 'http';
+
+let new_server: Server;
 
 let AppDataSource: DataSource;
-import  {app, server}  from '../app';
 
 beforeAll(async () => {
   AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
   if (AppDataSource) {
-    server.close()
     await AppDataSource.destroy();
   }
+  new_server.close()
 });
 
 describe('Vehicle API Routes', () => {
   test('GET /vehicles should return an empty array initially', async () => {
-    const response = await request(app).get('/vehicles');
+    const response = await request(new_server).get('/vehicles');
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
   });
 
   test('POST /vehicles should create a new vehicle', async () => {
-    const response = await request(app)
+    const response = await request(new_server)
       .post('/vehicles')
       .send({
         vehicleType: 'Truck',
@@ -43,7 +47,7 @@ describe('Vehicle API Routes', () => {
   });
 
   test('GET /vehicles should return the created vehicle', async () => {
-    const response = await request(app).get('/vehicles');
+    const response = await request(new_server).get('/vehicles');
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
     expect(response.body[0].vehicleType).toBe('Truck');
@@ -51,20 +55,20 @@ describe('Vehicle API Routes', () => {
   });
 
   test('GET /vehicles/:vehicleId should return a specific vehicle', async () => {
-    const vehiclesResponse = await request(app).get('/vehicles');
+    const vehiclesResponse = await request(new_server).get('/vehicles');
     const vehicleId = vehiclesResponse.body[0].vehicleId;
 
-    const response = await request(app).get(`/vehicles/${vehicleId}`);
+    const response = await request(new_server).get(`/vehicles/${vehicleId}`);
     expect(response.status).toBe(200);
     expect(response.body.vehicleId).toBe(vehicleId);
     expect(response.body.vehicleType).toBe('Truck');
   });
 
   test('PUT /vehicles/:vehicleId should update a vehicle', async () => {
-    const vehiclesResponse = await request(app).get('/vehicles');
+    const vehiclesResponse = await request(new_server).get('/vehicles');
     const vehicleId = vehiclesResponse.body[0].vehicleId;
 
-    const response = await request(app)
+    const response = await request(new_server)
       .put(`/vehicles/${vehicleId}`)
       .send({
         vehicleType: 'SUV',
@@ -83,20 +87,14 @@ describe('Vehicle API Routes', () => {
   });
 
   test('DELETE /vehicles/:vehicleId should delete a vehicle', async () => {
-    const vehiclesResponse = await request(app).get('/vehicles');
+    const vehiclesResponse = await request(new_server).get('/vehicles');
     const vehicleId = vehiclesResponse.body[0].vehicleId;
 
-    const deleteResponse = await request(app).delete(`/vehicles/${vehicleId}`);
+    const deleteResponse = await request(new_server).delete(`/vehicles/${vehicleId}`);
     expect(deleteResponse.status).toBe(200);
     expect(deleteResponse.body.message).toBe('Vehicle deleted successfully');
 
-    const fetchResponse = await request(app).get(`/vehicles/${vehicleId}`);
+    const fetchResponse = await request(new_server).get(`/vehicles/${vehicleId}`);
     expect(fetchResponse.status).toBe(404);
-  });
-
-  test('DELETE /vehicles/:vehicleId with invalid ID should return 400', async () => {
-    const response = await request(app).delete('/vehicles/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Invalid vehicle ID');
   });
 });

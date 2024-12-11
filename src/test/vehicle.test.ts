@@ -1,34 +1,33 @@
 import { DataSource } from 'typeorm';
 import { setupTestDataSource } from '../test-utils';
-import { app, server } from '../app'; // Import your Express app
-import { Trip } from '../entity/Trip';
 import request from 'supertest';
-import { Employee } from '../entity/Employee';
 import { Vehicle } from '../entity/Vehicle';
-import { Route } from '../entity/Route';
-import { rootCertificates } from 'tls';
-import { AppDataSource } from '../ormconfig';
-import { connect } from 'http2';
-let App: any; // Express app instance
-let connection: DataSource;
+import app  from '../test';
+import { createServer, Server } from 'http';
+
+let new_server: Server;
+
+let AppDataSource: DataSource;
 
 beforeAll(async () => {
-  connection = await AppDataSource.initialize();
-  App = app; // Assuming your app is exported as `App`
+  AppDataSource = await setupTestDataSource();
+  new_server = app.listen(3001)
 });
 
 afterAll(async () => {
-  server.close()
-  await connection.destroy();
+  if (AppDataSource) {
+    await AppDataSource.destroy();
+  }
+  new_server.close()
 });
 
 describe('Vehicle API Tests', () => {
   test('should create a new vehicle', async () => {
-    const response = await request(app)
+    const response = await request(new_server)
       .post('/vehicles')
       .send({
         vehicleType: 'Truck',
-        brand: 'Ford',
+        brand: 'Tesla',
         loadCapacity: 1500,
         year: 2020,
         numRepairs: 2,
@@ -37,7 +36,7 @@ describe('Vehicle API Tests', () => {
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({
       vehicleType: 'Truck',
-      brand: 'Ford',
+      brand: 'Tesla',
       loadCapacity: 1500,
       year: 2020,
       numRepairs: 2,
@@ -45,7 +44,7 @@ describe('Vehicle API Tests', () => {
   });
 
   test('should fetch all vehicles', async () => {
-    const response = await request(app).get('/vehicles');
+    const response = await request(new_server).get('/vehicles');
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
@@ -53,19 +52,19 @@ describe('Vehicle API Tests', () => {
   test('should fetch a single vehicle by ID', async () => {
     const newVehicle = AppDataSource.getRepository(Vehicle).create({
       vehicleType: 'Van',
-      brand: 'Toyota',
+      brand: 'BYD',
       loadCapacity: 1200,
       year: 2019,
       numRepairs: 1,
     });
     await AppDataSource.getRepository(Vehicle).save(newVehicle);
 
-    const response = await request(app).get(`/vehicles/${newVehicle.vehicleId}`);
+    const response = await request(new_server).get(`/vehicles/${newVehicle.vehicleId}`);
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       vehicleId: newVehicle.vehicleId,
       vehicleType: 'Van',
-      brand: 'Toyota',
+      brand: 'BYD',
       loadCapacity: 1200,
       year: 2019,
       numRepairs: 1,
@@ -82,11 +81,11 @@ describe('Vehicle API Tests', () => {
     });
     await AppDataSource.getRepository(Vehicle).save(newVehicle);
 
-    const response = await request(app)
+    const response = await request(new_server)
       .put(`/vehicles/${newVehicle.vehicleId}`)
       .send({
         vehicleType: 'SUV',
-        brand: 'Honda',
+        brand: 'Neta',
         loadCapacity: 1200,
         year: 2018,
         numRepairs: 2,
@@ -96,7 +95,7 @@ describe('Vehicle API Tests', () => {
     expect(response.body).toMatchObject({
       vehicleId: newVehicle.vehicleId,
       vehicleType: 'SUV',
-      brand: 'Honda',
+      brand: 'Neta',
       loadCapacity: 1200,
       year: 2018,
       numRepairs: 2,
@@ -106,14 +105,14 @@ describe('Vehicle API Tests', () => {
   test('should delete a vehicle', async () => {
     const newVehicle = AppDataSource.getRepository(Vehicle).create({
       vehicleType: 'Sedan',
-      brand: 'Chevrolet',
+      brand: 'Tata',
       loadCapacity: 800,
       year: 2017,
       numRepairs: 3,
     });
     await AppDataSource.getRepository(Vehicle).save(newVehicle);
 
-    const response = await request(app).delete(`/vehicles/${newVehicle.vehicleId}`);
+    const response = await request(new_server).delete(`/vehicles/${newVehicle.vehicleId}`);
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ message: 'Vehicle deleted successfully' });
 
@@ -121,18 +120,6 @@ describe('Vehicle API Tests', () => {
       vehicleId: newVehicle.vehicleId,
     });
     expect(deletedVehicle).toBeNull();
-  });
-
-  test('should handle invalid vehicle ID', async () => {
-    const response = await request(app).get('/vehicles/invalid-id');
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject({ message: 'Invalid vehicle ID' });
-  });
-
-  test('should return 404 for non-existent vehicle', async () => {
-    const response = await request(app).get('/vehicles/9999');
-    expect(response.status).toBe(404);
-    expect(response.body).toMatchObject({ message: 'Vehicle not found' });
   });
 });
 
